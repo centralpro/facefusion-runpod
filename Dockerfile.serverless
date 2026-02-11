@@ -1,7 +1,8 @@
 # FaceFusion RunPod Serverless（Load Balancer）
 # 仅在有请求时启动 Worker，按 GPU 使用时长计费；通过 /ping 健康检查 + Gradio UI
+# 使用 cuDNN 9 基础镜像（onnxruntime-gpu 1.24 需要）
 
-FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
+FROM nvidia/cuda:12.3.2-cudnn9-runtime-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -34,6 +35,11 @@ RUN python -m pip install --no-cache-dir -r /app/facefusion/requirements.txt && 
 
 # RunPod Load Balancer 使用 PORT（默认 80）
 ENV PORT=80
+
+# 默认临时目录：挂载 Network Volume 到 /data 时可持久化上传
+RUN mkdir -p /data/facefusion
+ENV TEMP_PATH=/data/facefusion
+ENV GRADIO_TEMP_DIR=/data/facefusion/gradio
 
 WORKDIR /app/facefusion
 

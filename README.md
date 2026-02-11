@@ -92,13 +92,19 @@ docker push <你的用户名>/facefusion-runpod-serverless:latest
 2. **Import from Docker Registry**，镜像填：`<你的用户名>/facefusion-runpod-serverless:latest`。
 3. **Endpoint Type** 选择 **Load Balancer**（不要选 Queue-based）。
 4. **GPU Configuration** 选择至少一张 GPU（如 24GB）。
-5. 其他保持默认，**Deploy Endpoint**。
+5. **重要**：将 **Max workers** 设为 **1**（避免上传/会话被分散到不同 Worker，导致 404/403）。
+6. 其他保持默认，**Deploy Endpoint**。
 
 ### 4. 通过 UI 访问
 
 - 创建完成后，RunPod 会给出 Endpoint URL，形如：`https://<ENDPOINT_ID>.api.runpod.ai`。
-- 在浏览器中打开该 URL 即可使用 FaceFusion Gradio 界面。
+- **需携带 API Key**：浏览器访问需添加 `Authorization: Bearer <API_KEY>` 头，可用 [ModHeader](https://modheader.com/) 等扩展，或将 key 放在 URL：`https://<ENDPOINT_ID>.api.runpod.ai/?api_key=<你的API_KEY>`。
 - 首次访问或冷启动时 Worker 会拉取镜像并启动，可能需要几十秒；之后一段时间内有流量会保持 warm，无流量后会自动缩容，仅按实际使用计费。
+
+### 5. 可选：挂载 Network Volume 持久化上传
+
+- 在 Endpoint 设置中挂载 Network Volume 到 **`/data`**。
+- 上传文件会存储在 `/data/facefusion/gradio`，Worker 重启后仍可保留。
 
 ### 健康检查说明
 

@@ -7,11 +7,25 @@ RunPod Serverless Load Balancer 入口。
 import os
 import sys
 
+# 临时目录：支持挂载 Network Volume 到 /data 持久化上传
+temp_path = os.environ.get("TEMP_PATH") or (
+    os.path.dirname(os.environ["GRADIO_TEMP_DIR"])
+    if os.environ.get("GRADIO_TEMP_DIR")
+    else "/data/facefusion"
+)
+try:
+    os.makedirs(temp_path, exist_ok=True)
+    os.makedirs(os.path.join(temp_path, "gradio"), exist_ok=True)
+except OSError:
+    temp_path = "/tmp/facefusion"
+    os.makedirs(temp_path, exist_ok=True)
+
 # 以 serverless 子命令运行，只构建 UI 不直接 launch
 sys.argv = [
     "facefusion.py",
     "serverless",
     "--execution-providers", "cuda",
+    "--temp-path", temp_path,
 ]
 
 from facefusion import core
