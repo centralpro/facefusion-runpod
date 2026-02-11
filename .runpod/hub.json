@@ -1,0 +1,15 @@
+{
+  "title": "FaceFusion",
+  "description": "FaceFusion: face swap, face restore, lip sync and more via Gradio Web UI. Deploy as Serverless (pay per use) or Pod. Requires GPU.",
+  "type": "serverless",
+  "category": "image",
+  "config": {
+    "runsOn": "GPU",
+    "endpointType": "LB",
+    "containerDiskInGb": 25,
+    "gpuCount": 1,
+    "gpuIds": "",
+    "allowedCudaVersions": ["12.2", "12.1", "12.0", "11.8"],
+    "env": []
+  }
+}

@@ -1,0 +1,34 @@
+# FaceFusion RunPod Serverless（Load Balancer）
+# 仅在有请求时启动 Worker，按 GPU 使用时长计费；通过 /ping 健康检查 + Gradio UI
+
+FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-venv \
+    python3-pip \
+    ffmpeg \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN ln -sf /usr/bin/python3 /usr/bin/python
+
+WORKDIR /app
+COPY facefusion/ /app/facefusion/
+
+# 依赖 + Serverless 入口依赖（FastAPI / Uvicorn）
+RUN python -m pip install --no-cache-dir -r /app/facefusion/requirements.txt && \
+    python -m pip uninstall -y onnxruntime 2>/dev/null || true && \
+    python -m pip install --no-cache-dir onnxruntime-gpu==1.24.1 && \
+    python -m pip install --no-cache-dir -r /app/facefusion/requirements-serverless.txt
+
+# RunPod Load Balancer 使用 PORT（默认 80）
+ENV PORT=80
+
+WORKDIR /app/facefusion
+
+# 启动带 /ping 的 FastAPI + Gradio（见 serverless_app.py）
+CMD ["python", "-u", "serverless_app.py"]
